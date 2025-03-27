@@ -15,7 +15,6 @@ class MainState extends Equatable {
   }){
     return MainState(
         darkMode: darkMode ?? this.darkMode,
-        locale: locale ?? this.locale
     );
   }
 

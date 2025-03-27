@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -19,8 +18,7 @@ class WatchedScreen extends StatefulWidget {
   State<WatchedScreen> createState() => _WatchedScreenState();
 }
 
-class _WatchedScreenState extends State<WatchedScreen> with AutomaticKeepAliveClientMixin{
-
+class _WatchedScreenState extends State<WatchedScreen> with AutomaticKeepAliveClientMixin {
   late WatchedCubit watchedViewModel = context.read<WatchedCubit>();
   ScrollController scrollController = ScrollController();
   RefreshController refreshController = RefreshController();
@@ -50,63 +48,59 @@ class _WatchedScreenState extends State<WatchedScreen> with AutomaticKeepAliveCl
               height: 20.h,
               // focusNode: searchNode,
               // controller: searchTextCtrl,
-              onChange: (value){
-              },
+              onChange: (value) {},
               prefixIcon: GestureDetector(
-                  onTap: (){
-                  },
-                  child: const Icon(Icons.search, color: Colors.white,)),
-              suffixIcon: GestureDetector(
-                  onTap: (){
-                  },
-                  child: Icon(Icons.clear, color: Colors.white.withOpacity(0.8))
-              ),
+                  onTap: () {},
+                  child: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  )),
+              suffixIcon: GestureDetector(onTap: () {}, child: Icon(Icons.clear, color: Colors.white.withOpacity(0.8))),
             ),
             Expanded(
               child: CustomRefresh(
                 controller: refreshController,
                 scrollController: scrollController,
-                onLoad: () async{
-                  if(watchedViewModel.state.lastPage){
+                onLoad: () async {
+                  if (watchedViewModel.state.lastPage) {
                     refreshController.loadNoData();
-                  }else{
+                  } else {
                     await watchedViewModel.getMovieHistory();
                     refreshController.loadComplete();
                   }
                 },
-                onRefresh: () async{
+                onRefresh: () async {
                   await watchedViewModel.getMovieHistory(isRefresh: true);
                 },
                 child: BlocBuilder<WatchedCubit, WatchedState>(
-                  buildWhen: (previous, current) => previous.histories != current.histories,
-                  builder: (context, state) {
-                    var items = state.histories;
+                    buildWhen: (previous, current) => previous.histories != current.histories,
+                    builder: (context, state) {
+                      var items = state.histories;
 
-                    if(items.isEmpty){
-                      return const Center(child: Text("Không có phim nào"));
-                    }
+                      if (items.isEmpty) {
+                        return const Center(child: Text("Không có phim nào"));
+                      }
 
-                    return AnimatedList(
-                      key: watchedViewModel.keyListAnimation,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      initialItemCount: items.length,
-                      itemBuilder: (context, index, animation){
-                        MovieLocal? previousItem = index == 0 ? null : items[index - 1];
-                        var item = items[index];
+                      return AnimatedList(
+                        key: watchedViewModel.keyListAnimation,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        initialItemCount: items.length,
+                        itemBuilder: (context, index, animation) {
+                          MovieLocal? previousItem = index == 0 ? null : items[index - 1];
+                          var item = items[index];
 
-                        var previousItemTime = DateTime.fromMillisecondsSinceEpoch(previousItem?.lastTime ?? 0);
-                        var itemTime = DateTime.fromMillisecondsSinceEpoch(item.lastTime ?? 0);
-                        var showDate = itemTime.day != previousItemTime.day;
+                          var previousItemTime = DateTime.fromMillisecondsSinceEpoch(previousItem?.lastTime ?? 0);
+                          var itemTime = DateTime.fromMillisecondsSinceEpoch(item.lastTime ?? 0);
+                          var showDate = itemTime.day != previousItemTime.day;
 
-                        return WatchedItem(
-                          movieLocal: item,
-                          showDate: showDate,
-                        );
-                      },
-                    );
-                  }
-                ),
+                          return WatchedItem(
+                            movieLocal: item,
+                            showDate: showDate,
+                          );
+                        },
+                      );
+                    }),
               ),
             ),
           ],

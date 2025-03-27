@@ -27,9 +27,9 @@ void showToast(String content){
 }
 
 void printData(String? content){
-  if (kDebugMode) {
-    print("==========> $content");
-  }
+  // if (kDebugMode) {
+    debugPrint("==========> $content");
+  // }
 }
 
 double calculateHeightItemGirdView(BuildContext context, double height, int columnCount){

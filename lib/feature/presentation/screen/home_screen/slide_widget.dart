@@ -1,8 +1,4 @@
-
-import 'dart:async';
-
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify/feature/commons/utility/size_extensions.dart';
 import 'package:spotify/feature/data/models/movie_info.dart';
