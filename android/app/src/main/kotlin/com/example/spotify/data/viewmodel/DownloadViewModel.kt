@@ -5,8 +5,11 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
-import com.arthenica.mobileffmpeg.Config
-import com.arthenica.mobileffmpeg.FFmpeg
+import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.FFmpegKitConfig.enableStatisticsCallback
+import com.arthenica.ffmpegkit.FFmpegSession
+import com.arthenica.ffmpegkit.FFmpegSessionCompleteCallback
+import com.arthenica.ffmpegkit.ReturnCode
 import com.example.spotify.AppConstants
 import com.example.spotify.data.model.MovieEpisode
 import com.example.spotify.data.model.Status
@@ -29,6 +32,12 @@ class DownloadViewModel(private val listener: IEventListener) {
         listenDownloadExecuteProcess()
     }
 
+    fun checkAndRestartDownload(){
+        if(currentMovie == null) {
+            startDownload()
+        }
+    }
+
     fun addData(applicationContext: Context, movie: MovieEpisode){
         if(currentMovie?.id == movie.id) return
 
@@ -48,7 +57,7 @@ class DownloadViewModel(private val listener: IEventListener) {
     fun cancelDownload(movie: MovieEpisode){
         Log.e("cancelDownload", "${movie.id}")
         if(movie.id == currentMovie?.id){
-            FFmpeg.cancel()
+            FFmpegKit.cancel()
         }else{
             moviesWaiting.forEach {
                 if(it.id == movie.id){
@@ -68,17 +77,17 @@ class DownloadViewModel(private val listener: IEventListener) {
             return
         }
 
-        FFmpeg.executeAsync(
+        FFmpegKit.executeAsync(
             "-i ${currentMovie!!.url} -c:v mpeg4 -y ${currentMovie!!.localPath}"
-        ) { _, returnCode ->
-            when (returnCode) {
-                Config.RETURN_CODE_SUCCESS -> {
+        ) {
+            when (it.returnCode.value) {
+                ReturnCode.SUCCESS -> {
                     listener.onDownload(
                         currentMovie!!.apply {
                             status = Status.Success("Download completed successfully")
                         })
                 }
-                Config.RETURN_CODE_CANCEL -> {
+                ReturnCode.CANCEL -> {
                     listener.onDownload(
                         currentMovie!!.apply {
                             status = Status.Cancel("Download canceled", "")
@@ -106,10 +115,10 @@ class DownloadViewModel(private val listener: IEventListener) {
     }
 
     private fun listenDownloadExecuteProcess(){
-        Config.enableStatisticsCallback { newStatistics ->
+        enableStatisticsCallback { newStatistics ->
             if(currentMovie == null) return@enableStatisticsCallback
 
-            currentMovie!!.currentSecondTime = newStatistics.time
+            currentMovie!!.currentSecondTime = newStatistics.time.toInt()
             Log.e("progress", "current: ${currentMovie!!.currentSecondTime}, total: $${currentMovie!!.totalSecondTime} - process: $${currentMovie!!.executeProcess}")
             listener.onDownload(
                 currentMovie!!.apply {

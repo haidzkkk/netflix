@@ -8,11 +8,14 @@ import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.spotify.data.model.MovieEpisode
+import com.example.spotify.data.model.Status
 import com.example.spotify.data.model.StatusEnum
 import com.example.spotify.data.viewmodel.DownloadViewModel
 import com.example.spotify.data.viewmodel.IEventListener
+import com.google.gson.Gson
 
 
 class DownloadService : Service() {
@@ -62,10 +65,11 @@ class DownloadService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        showNotifyForeground()
-        val data = intent?.getSerializableExtra(AppConstants.DOWNLOAD_SERVICE_DATA)
-        val movieEpisode: MovieEpisode? = if(data != null) (data as MovieEpisode?) else null
-
+        val movieEpisode: MovieEpisode? = intent?.getStringExtra(AppConstants.DOWNLOAD_SERVICE_DATA)?.let { jsonData ->
+            Gson().fromJson(jsonData, MovieEpisode::class.java).apply {
+                this.status = Status.Initialization()
+            }
+        }
         when(intent?.action){
             AppConstants.INVOKE_METHOD_START_SERVICE -> {
                 if(movieEpisode != null){
@@ -77,8 +81,14 @@ class DownloadService : Service() {
                     viewMode.cancelDownload(movieEpisode)
                 }
             }
-
+            else -> {
+                viewMode.checkAndRestartDownload()
+            }
         }
+
+        showNotifyForeground(
+            message = "Đang chờ ${movieEpisode?.movieName ?: ""}"
+        )
         return START_STICKY
     }
 

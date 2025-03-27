@@ -5,8 +5,8 @@ class ParamsDTO {
   String? typeSlug;
   List<String>? filterCategory;
   List<String>? filterCountry;
-  String? filterYear;
-  String? filterType;
+  dynamic filterYear;
+  dynamic filterType;
   String? sortField;
   String? sortType;
   PaginationDTO? pagination;

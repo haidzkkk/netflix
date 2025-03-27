@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
@@ -72,7 +73,7 @@ class _MyAppState extends State<MyApp> {
           return BlocConsumer<MainBloc, MainState>(
             listener: (context, state) {
             },
-            builder: (context, state) {
+          builder: (context, state) {
               return MaterialApp(
                 navigatorKey: sl<ContextService>().globalKey,
                 debugShowCheckedModeBanner: false,

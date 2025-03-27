@@ -22,9 +22,7 @@ class _DescriptionMovieWidgetState extends State<DescriptionMovieWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(
-          height: 15,
-        ),
+        const SizedBox(height: 15),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -65,9 +63,7 @@ class _DescriptionMovieWidgetState extends State<DescriptionMovieWidget> {
                                 style: Style.body),
                           ]),
                         ),
-                        const SizedBox(
-                          height: 5,
-                        ),
+                        const SizedBox(height: 5),
                         RichText(
                           text: TextSpan(children: [
                             TextSpan(text: "Country: ", style: Style.body.copyWith(fontWeight: FontWeight.w700)),
@@ -78,18 +74,14 @@ class _DescriptionMovieWidgetState extends State<DescriptionMovieWidget> {
                                 style: Style.body),
                           ]),
                         ),
-                        const SizedBox(
-                          height: 5,
-                        ),
+                        const SizedBox(height: 5),
                         RichText(
                           text: TextSpan(children: [
                             TextSpan(text: "Actor: ", style: Style.body.copyWith(fontWeight: FontWeight.w700)),
                             TextSpan(text: state.currentMovie?.actor?.join(", ") ?? " _ _ ", style: Style.body),
                           ]),
                         ),
-                        const SizedBox(
-                          height: 5,
-                        ),
+                        const SizedBox(height: 5),
                         RichText(
                           text: TextSpan(children: [
                             TextSpan(text: "Director: ", style: Style.body.copyWith(fontWeight: FontWeight.w700)),
@@ -102,23 +94,17 @@ class _DescriptionMovieWidgetState extends State<DescriptionMovieWidget> {
             ),
           ],
         ),
-        const SizedBox(
-          height: 5,
-        ),
+        const SizedBox(height: 5),
         BlocBuilder<MovieBloc, MovieState>(
             buildWhen: (previous, current) => previous.currentMovie != current.currentMovie,
             builder: (context, state) {
               if (state.movie.data?.content == null) {
-                return const SizedBox(
-                  height: 5,
-                );
+                return const SizedBox(height: 5);
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(
-                    height: 5,
-                  ),
+                  const SizedBox(height: 5),
                   Text("Mô tả", style: Style.body.copyWith(fontWeight: FontWeight.w700)),
                   ReadMoreText(
                     "${state.currentMovie?.content ?? " _ _ "}  ",
@@ -128,9 +114,7 @@ class _DescriptionMovieWidgetState extends State<DescriptionMovieWidget> {
                 ],
               );
             }),
-        const SizedBox(
-          height: 20,
-        ),
+        const SizedBox(height: 20),
       ],
     );
   }

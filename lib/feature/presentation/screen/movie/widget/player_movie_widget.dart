@@ -33,14 +33,16 @@ class _PlayerMovieWidgetState extends State<PlayerMovieWidget> {
     return Column(
       children: [
         BlocBuilder<MovieBloc, MovieState>(
-            buildWhen: (previous, current) => previous.isExpandWatchMovie != current.isExpandWatchMovie
-              || previous.isPlay != current.isPlay,
-            builder: (context, state){
-              viewModel.betterPlayerController?.setControlsEnabled(state.isExpandWatchMovie );
+            buildWhen: (previous, current) =>
+                previous.isExpandWatchMovie != current.isExpandWatchMovie || previous.isPlay != current.isPlay,
+            builder: (context, state) {
+              viewModel.betterPlayerController?.setControlsEnabled(state.isExpandWatchMovie);
               return GestureDetector(
-                onTap: state.isExpandWatchMovie ? null : (){
-                  viewModel.add(ChangeExpandedMovieEvent(isExpand: true));
-                },
+                onTap: state.isExpandWatchMovie
+                    ? null
+                    : () {
+                        viewModel.add(ChangeExpandedMovieEvent(isExpand: true));
+                      },
                 behavior: HitTestBehavior.opaque,
                 child: Row(
                   children: [
@@ -49,50 +51,64 @@ class _PlayerMovieWidgetState extends State<PlayerMovieWidget> {
                       width: state.isExpandWatchMovie ? PageUtil.screenWidth : widget.heightMovieCollapse / 9 * 21,
                       duration: const Duration(milliseconds: 200),
                       child: AspectRatio(
-                        aspectRatio: state.isExpandWatchMovie ? 16/9 : 21/9,
+                        aspectRatio: state.isExpandWatchMovie ? 16 / 9 : 21 / 9,
                         child: viewModel.betterPlayerController != null
-                          ? CustomBetterPlayer(controller: viewModel.betterPlayerController!,)
-                          : const SizedBox(),
+                            ? CustomBetterPlayer(
+                                controller: viewModel.betterPlayerController!,
+                              )
+                            : const SizedBox(),
                       ),
                     ),
-                    if(!state.isExpandWatchMovie)
+                    if (!state.isExpandWatchMovie)
                       Expanded(
                         child: Row(
                           children: [
-                            const Spacer(flex: 1,),
+                            const Spacer(
+                              flex: 1,
+                            ),
                             Expanded(
                               flex: 13,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(state.currentMovie?.name ?? "", style: Style.title2, maxLines: 1, overflow: TextOverflow.ellipsis,),
-                                  Text("Tập ${state.currentEpisode?.getNumberName() ?? ""}", style: Style.body, maxLines: 1, overflow: TextOverflow.ellipsis,),
+                                  Text(
+                                    state.currentMovie?.name ?? "",
+                                    style: Style.title2,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    "Tập ${state.currentEpisode?.getNumberName() ?? ""}",
+                                    style: Style.body,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ],
                               ),
                             ),
                             Expanded(
                               flex: 4,
                               child: IconButton(
-                                  onPressed: (){
-                                    if(viewModel.betterPlayerController?.isPlaying() == true){
+                                  onPressed: () {
+                                    if (viewModel.betterPlayerController?.isPlaying() == true) {
                                       viewModel.betterPlayerController?.pause();
-                                    }else{
+                                    } else {
                                       viewModel.betterPlayerController?.play();
                                     }
                                   },
-                                  icon: Icon(state.isPlay == true
-                                      ? Icons.pause
-                                      : Icons.play_arrow_rounded,
+                                  icon: Icon(
+                                    state.isPlay == true ? Icons.pause : Icons.play_arrow_rounded,
                                     size: 25.sp,
-                                  )
-                              ),
+                                  )),
                             ),
                             Expanded(
                               flex: 4,
                               child: IconButton(
                                   onPressed: () => widget.actionDispose(),
-                                  icon: Icon(Icons.clear, size: 25.sp,)
-                              ),
+                                  icon: Icon(
+                                    Icons.clear,
+                                    size: 25.sp,
+                                  )),
                             ),
                           ],
                         ),
@@ -100,31 +116,32 @@ class _PlayerMovieWidgetState extends State<PlayerMovieWidget> {
                   ],
                 ),
               );
-            }
-        ),
+            }),
         BlocBuilder<MovieBloc, MovieState>(
-            buildWhen: (previous, current) => previous.visibleControlsPlayer != current.visibleControlsPlayer
-                || previous.totalTimeEpisode != current.totalTimeEpisode
-                || previous.currentTimeEpisode != current.currentTimeEpisode,
-            builder: (context, state){
-              var process = (state.currentTimeEpisode ?? 0.0) /  (state.totalTimeEpisode ?? 0.0);
-              if(process.isNaN || process.isInfinite || process < 0 || process > 1){
+            buildWhen: (previous, current) =>
+                previous.visibleControlsPlayer != current.visibleControlsPlayer ||
+                previous.totalTimeEpisode != current.totalTimeEpisode ||
+                previous.currentTimeEpisode != current.currentTimeEpisode,
+            builder: (context, state) {
+              var process = (state.currentTimeEpisode ?? 0.0) / (state.totalTimeEpisode ?? 0.0);
+              if (process.isNaN || process.isInfinite || process < 0 || process > 1) {
                 process = 0;
               }
+
               return CustomProcessIndicator(
                 width: MediaQuery.of(context).size.width,
-                height: widget.heightProcess ,
+                height: widget.heightProcess,
                 indicatorSize: widget.heightProcess * 3,
                 color: viewModel.state.currentMovie?.color,
                 process: process,
                 enable: state.visibleControlsPlayer,
                 margin: const EdgeInsets.only(bottom: 15),
                 onMoved: (value) {
-                  viewModel.betterPlayerController?.seekTo(Duration(seconds: ((state.totalTimeEpisode ?? 0).toDouble() * value).toInt()));
+                  viewModel.betterPlayerController
+                      ?.seekTo(Duration(seconds: ((state.totalTimeEpisode ?? 0).toDouble() * value).toInt()));
                 },
               );
-            }
-        ),
+            }),
       ],
     );
   }

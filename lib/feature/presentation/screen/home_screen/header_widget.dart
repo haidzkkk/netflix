@@ -49,6 +49,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
             ),
           ),
           Positioned.fill(
+
             child: ShaderMask(
               shaderCallback: (Rect bounds) {
                 return LinearGradient(

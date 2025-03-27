@@ -1,12 +1,21 @@
 package com.example.spotify
 
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PictureInPictureParams
 import android.content.*
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
+import android.util.Log
 import android.util.Rational
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.spotify.data.model.MovieEpisode
 import com.example.spotify.data.model.Status
 import com.example.spotify.widgetprovider.MovieWorker
@@ -75,7 +84,6 @@ class MainActivity: FlutterActivity() {
             when(intent?.action){
                 AppConstants.ACTION_DOWNLOAD -> {
                     val jsonData = intent.getStringExtra(AppConstants.DOWNLOAD_SERVICE_DATA)
-
                     if (jsonData != null && eventDownloadSink != null){
                         eventDownloadSink?.success(jsonData)
                     }
@@ -119,10 +127,8 @@ class MainActivity: FlutterActivity() {
         MethodChannel.MethodCallHandler{ call, result ->
             when(call.method){
                 AppConstants.INVOKE_METHOD_START_SERVICE -> {
-                    val movie = Gson().fromJson(call.arguments as String, MovieEpisode::class.java).apply {
-                        this.status = Status.Initialization()
-                    }
-                    sendActionToDownloadService(data = movie, action = AppConstants.INVOKE_METHOD_START_SERVICE)
+                    checkRequestNotification()
+                    sendActionToDownloadService(jsonData = call.arguments as String, action = AppConstants.INVOKE_METHOD_START_SERVICE)
                     result.success("")
                     return@MethodCallHandler
                 }
@@ -132,10 +138,7 @@ class MainActivity: FlutterActivity() {
                     return@MethodCallHandler
                 }
                 AppConstants.INVOKE_METHOD_CANCEL_MOVIE_EPISODE -> {
-                    val movie = Gson().fromJson(call.arguments as String, MovieEpisode::class.java).apply {
-                        this.status = Status.Initialization()
-                    }
-                    sendActionToDownloadService(data = movie, action = AppConstants.INVOKE_METHOD_CANCEL_MOVIE_EPISODE)
+                    sendActionToDownloadService(jsonData = call.arguments as String, action = AppConstants.INVOKE_METHOD_CANCEL_MOVIE_EPISODE)
                     result.success("")
                     return@MethodCallHandler
                 }
@@ -174,12 +177,57 @@ class MainActivity: FlutterActivity() {
             .invokeMethod(AppConstants.INVOKE_METHOD_OPEN_MOVIE, movieJson)
     }
 
-    private fun sendActionToDownloadService(data: MovieEpisode?, action: String?){
+    private fun sendActionToDownloadService(jsonData: String?, action: String?){
         val intent = Intent(this, DownloadService::class.java).apply {
             setAction(action)
-            putExtra(AppConstants.DOWNLOAD_SERVICE_DATA, data)
+            putExtra(AppConstants.DOWNLOAD_SERVICE_DATA, jsonData)
         }
         startService(intent)
+    }
+
+    private fun checkRequestNotification() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationEnabled = notificationManager.areNotificationsEnabled()
+            if(!notificationEnabled){
+                startToInfoApplication()
+            }
+            return
+        }
+
+        val codeRequest = ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.POST_NOTIFICATIONS)
+        if(codeRequest == PackageManager.PERMISSION_GRANTED){
+            return
+        }
+
+        val isAsked = ActivityCompat.shouldShowRequestPermissionRationale(
+            this, android.Manifest.permission.POST_NOTIFICATIONS)
+        if(!isAsked){
+            startToInfoApplication()
+            return
+        }
+
+        requestPermissions(
+            arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+            111)
+    }
+
+    private fun startToInfoApplication(){
+        AlertDialog.Builder(this)
+            .setIcon(R.drawable.border_radius)
+            .setTitle("Cần cấp quyền trong Cài đặt")
+            .setMessage("Bạn đã từ chối quyền thông báo.")
+            .setPositiveButton("Đi đến Cài đặt") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+            .setNegativeButton("Hủy") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
     }
 
     private fun createChannelNotify() {
@@ -189,7 +237,7 @@ class MainActivity: FlutterActivity() {
 
         val notificationManager = getSystemService(NotificationManager::class.java) as NotificationManager
 
-        val channel1 = NotificationChannel(AppConstants.CHANNEL_ID, "CHANNEL_NAME", NotificationManager.IMPORTANCE_DEFAULT)
+        val channel1 = NotificationChannel(AppConstants.CHANNEL_ID, "Tải phim", NotificationManager.IMPORTANCE_DEFAULT)
         channel1.setSound(null, null)
         notificationManager.createNotificationChannel(channel1)
     }
